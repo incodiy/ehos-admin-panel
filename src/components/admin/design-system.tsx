@@ -5,11 +5,34 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Plus, ShieldAlert } from "lucide-react";
+import {
+  Plus,
+  ShieldAlert,
+  Handshake,
+  ListChecks,
+  Building2,
+  Users,
+  Shield,
+  MapPin,
+  Hotel,
+  FileText,
+  CreditCard,
+  Database,
+} from "lucide-react";
 
 /* Icon registry utk lintas RSC→client (komponen tak bisa dikirim Server→Client). */
 const ICON_REGISTRY: Record<string, LucideIcon> = {
   "shield-alert": ShieldAlert,
+  handshake: Handshake,
+  "list-checks": ListChecks,
+  building: Building2,
+  users: Users,
+  shield: Shield,
+  "map-pin": MapPin,
+  hotel: Hotel,
+  "file-text": FileText,
+  "credit-card": CreditCard,
+  database: Database,
 };
 
 /* ─── AdminPageHeader ─── */

@@ -220,7 +220,8 @@ export interface paths {
         /** Daftar hotel (filter brand_tier, region, status, mice facility) */
         get: operations["listHotels"];
         put?: never;
-        post?: never;
+        /** Tambah master hotel baru (ROOT_ADMIN) */
+        post: operations["createHotel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -236,14 +237,15 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** Detail hotel */
+        /** Detail hotel (by Code atau UUID) */
         get: operations["getHotel"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Soft delete master hotel (ROOT_ADMIN) */
+        delete: operations["deleteHotel"];
         options?: never;
         head?: never;
-        /** Update master hotel (ROOT/CORP_AUDITOR) */
+        /** Update master hotel (ROOT_ADMIN) */
         patch: operations["updateHotel"];
         trace?: never;
     };
@@ -271,14 +273,34 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Daftar brand + brand_tier */
+        /** Daftar brand dengan paginasi, filter tier dan status */
         get: operations["listBrands"];
+        put?: never;
+        /** Tambah master brand baru */
+        post: operations["createBrand"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/brands/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Konfigurasi brand_tier (PRD-F-01 — checklist dinamis menyesuaikan tipe hotel) */
+        patch: operations["updateBrandTier"];
         trace?: never;
     };
     "/regions": {
@@ -288,14 +310,34 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Daftar region */
+        /** Daftar region dengan paginasi dan filter */
         get: operations["listRegions"];
         put?: never;
-        post?: never;
+        /** Tambah master wilayah baru */
+        post: operations["createRegion"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/regions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detail wilayah beserta statistik properti & ROM */
+        get: operations["getRegion"];
+        put?: never;
+        post?: never;
+        /** Soft-delete wilayah (ditolak bila ada hotel aktif) */
+        delete: operations["deleteRegion"];
+        options?: never;
+        head?: never;
+        /** Update data wilayah atau transisi status FSM */
+        patch: operations["updateRegion"];
         trace?: never;
     };
     "/provinces": {
@@ -346,7 +388,8 @@ export interface paths {
         get: operations["getTemplate"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Soft-delete template (hanya template DRAFT yang belum dipakai sesi audit) */
+        delete: operations["deleteTemplate"];
         options?: never;
         head?: never;
         patch?: never;
@@ -380,6 +423,23 @@ export interface paths {
         put?: never;
         /** Lock template (immutable — snapshot sesi audit B3) */
         post: operations["lockTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/checklist/templates/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Arsipkan template (hanya template LOCKED) */
+        post: operations["archiveTemplate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -420,6 +480,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/checklist/templates/{id}/sections/{sectionId}/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                sectionId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update rubrik item (hanya template DRAFT) — rubric_type/max_score/weight/na/is_life_safety */
+        patch: operations["updateItem"];
+        trace?: never;
+    };
     "/audit/sessions": {
         parameters: {
             query?: never;
@@ -451,10 +532,12 @@ export interface paths {
         get: operations["getSession"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Batalkan / hapus sesi audit (hanya status DRAFT) */
+        delete: operations["deleteSession"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update sesi audit (hanya status DRAFT) */
+        patch: operations["updateSession"];
         trace?: never;
     };
     "/audit/sessions/{id}/submit": {
@@ -468,6 +551,23 @@ export interface paths {
         put?: never;
         /** Submit sesi (auditor selesai input) */
         post: operations["submitSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/audit/sessions/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reopen sesi audit (Corporate QA mengembalikan SUBMITTED ke IN_PROGRESS) */
+        post: operations["reopenSession"];
         delete?: never;
         options?: never;
         head?: never;
@@ -628,6 +728,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/audit/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Trail audit korporat (audit_logs) — hanya scope korporat / `users` */
+        get: operations["listAuditLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ingest/batches": {
         parameters: {
             query?: never;
@@ -748,6 +865,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/dashboard/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agregat operasional dashboard (hero stats + CAPA pipeline + SLA + insights) */
+        get: operations["getDashboardOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/capa/tickets": {
         parameters: {
             query?: never;
@@ -758,7 +892,7 @@ export interface paths {
         /** Daftar tiket CAPA (filter prioritas, status, SLA overdue) */
         get: operations["listTickets"];
         put?: never;
-        /** Buat tiket dari finding (auto-settle SLA F-03) */
+        /** Buat tiket dari finding (auto-settle SLA F-03) atau manual ad-hoc */
         post: operations["createTicket"];
         delete?: never;
         options?: never;
@@ -782,7 +916,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update metadata tiket (khusus status OPEN / IN_PROGRESS) */
+        patch: operations["updateTicket"];
         trace?: never;
     };
     "/capa/tickets/{id}/assign": {
@@ -902,6 +1037,26 @@ export interface paths {
         };
         /** Daftar bukti media + komparasi BEFORE vs AFTER (verification hub) */
         get: operations["listTicketMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/capa/tickets/{id}/media/{media_id}/presign-get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Presigned GET URL bukti media (verification hub, expire 5 mnt)
+         * @description Hanya media VERIFIED yang bisa di-presign-GET (objek benar ada); PENDING/PRESIGNED/FAILED → 409 (Constraint G4 — data jujur, tanpa stub gambar).
+         */
+        get: operations["presignGetTicketMedia"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1050,7 +1205,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update quotation status FSM atau approval diskon (F-09) */
+        patch: operations["updateQuotation"];
         trace?: never;
     };
     "/crm/quotations/{id}/pdf": {
@@ -1164,7 +1320,8 @@ export interface paths {
             };
             cookie?: never;
         };
-        get?: never;
+        /** Detail milestone dinas */
+        get: operations["getMilestone"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1294,6 +1451,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/brands/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detail brand beserta daftar hotel terafiliasi */
+        get: operations["getBrand"];
+        /** Update data brand */
+        put: operations["updateBrand"];
+        post?: never;
+        /** Soft-delete brand (ditolak bila ada hotel aktif terhubung) */
+        delete: operations["deleteBrand"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/brands/{code}/tier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Konfigurasi brand_tier (PRD-F-01) */
+        patch: operations["updateBrandTierDirect"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1406,11 +1599,26 @@ export interface components {
         };
         Brand: {
             /** Format: uuid */
-            id?: string;
-            code?: string;
-            name?: string;
+            id: string;
+            code: string;
+            name: string;
             /** @enum {string} */
-            tier?: "Luxury" | "Upscale" | "Boutique" | "Midscale" | "Budget" | "Eco-Resort";
+            tier: "Luxury" | "Upscale" | "Boutique" | "Midscale" | "Budget" | "Eco-Resort";
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            status: "ACTIVE" | "INACTIVE" | "RETIRED";
+            /** @default 0 */
+            hotels_count: number;
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: date-time */
+            updated_at?: string | null;
+        };
+        BrandTierUpdateRequest: {
+            /** @enum {string} */
+            tier: "Luxury" | "Upscale" | "Boutique" | "Midscale" | "Budget" | "Eco-Resort";
         };
         Region: {
             /** Format: uuid */
@@ -1418,7 +1626,44 @@ export interface components {
             code?: string;
             name?: string;
             country?: string;
-            sales_region?: string;
+            sales_region?: string | null;
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            status: "ACTIVE" | "INACTIVE" | "RETIRED";
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: date-time */
+            updated_at?: string | null;
+        };
+        RegionDetail: components["schemas"]["Region"] & {
+            /** @example 12 */
+            hotels_count?: number;
+            rom_names?: string[];
+        };
+        RegionCreateRequest: {
+            /** @example JABAR */
+            code: string;
+            /** @example West Java */
+            name: string;
+            /** @default Indonesia */
+            country: string;
+            /** @example Java Sales Division */
+            sales_region?: string | null;
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            status: "ACTIVE" | "INACTIVE" | "RETIRED";
+        };
+        RegionUpdateRequest: {
+            code?: string;
+            name?: string;
+            country?: string;
+            sales_region?: string | null;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE" | "RETIRED";
         };
         Province: {
             /** Format: uuid */
@@ -1474,17 +1719,88 @@ export interface components {
             gm_name?: string;
             rom_name?: string;
         };
+        HotelCreateRequest: {
+            /** @example CWS */
+            code: string;
+            /** @example Swiss-Belhotel Cirebon */
+            name: string;
+            /** Format: uuid */
+            brand_id: string;
+            /** Format: uuid */
+            region_id: string;
+            /** Format: uuid */
+            province_id: string;
+            /** @example Cirebon */
+            city: string;
+            geo: {
+                /** Format: double */
+                lat: number;
+                /** Format: double */
+                lng: number;
+            };
+            /** @default 200 */
+            geofence_radius_meters: number;
+            mice_facilities?: {
+                ballroom_capacity?: number;
+                meeting_rooms?: number;
+                has_videotron?: boolean;
+            };
+            /** Format: uuid */
+            gm_id?: string | null;
+            /** Format: uuid */
+            rom_id?: string | null;
+            /** Format: date */
+            opening_date?: string | null;
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            status: "ACTIVE" | "TEMPORARILY_CLOSED" | "TERMINATED";
+        };
+        HotelUpdateRequest: {
+            code?: string;
+            name?: string;
+            /** Format: uuid */
+            brand_id?: string;
+            /** Format: uuid */
+            region_id?: string;
+            /** Format: uuid */
+            province_id?: string;
+            city?: string;
+            geo?: {
+                /** Format: double */
+                lat?: number;
+                /** Format: double */
+                lng?: number;
+            };
+            geofence_radius_meters?: number;
+            mice_facilities?: {
+                ballroom_capacity?: number;
+                meeting_rooms?: number;
+                has_videotron?: boolean;
+            };
+            /** Format: uuid */
+            gm_id?: string | null;
+            /** Format: uuid */
+            rom_id?: string | null;
+            /** Format: date */
+            opening_date?: string | null;
+            /** Format: date */
+            terminate_date?: string | null;
+            /** @enum {string} */
+            status?: "ACTIVE" | "TEMPORARILY_CLOSED" | "TERMINATED";
+        };
         ChecklistTemplate: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** @enum {string} */
-            department?: "GM" | "HOUSEKEEPING" | "KITCHEN_FB" | "SECURITY_RISK";
-            name?: string;
+            department: "GM" | "HOUSEKEEPING" | "KITCHEN_FB" | "SECURITY_RISK";
+            name: string;
             /** @example v2026.1 */
-            version?: string;
+            version: string;
             brand_tier?: string | null;
             /** @enum {string} */
-            status?: "DRAFT" | "LOCKED" | "ARCHIVED";
+            status: "DRAFT" | "LOCKED" | "ARCHIVED";
             /** Format: date-time */
             locked_at?: string | null;
             /** Format: uuid */
@@ -1501,32 +1817,32 @@ export interface components {
         };
         ChecklistSection: {
             /** Format: uuid */
-            id?: string;
-            code?: string;
-            name?: string;
+            id: string;
+            code: string;
+            name: string;
             /** Format: uuid */
             parent_id?: string | null;
-            sort_order?: number;
+            sort_order: number;
         };
         ChecklistItem: {
             /** Format: uuid */
-            id?: string;
-            code?: string;
-            question_text?: string;
+            id: string;
+            code: string;
+            question_text: string;
             question_localized?: string | null;
             /** @enum {string} */
-            rubric_type?: "TRAFFIC_LIGHT" | "NUMERIC_SCALE" | "MULTI_ROOM" | "BINARY_COUNT";
+            rubric_type: "TRAFFIC_LIGHT" | "NUMERIC_SCALE" | "MULTI_ROOM" | "BINARY_COUNT";
             /** Format: double */
-            max_score?: number;
+            max_score: number;
             /** Format: double */
-            weight?: number;
-            na_allowed?: boolean;
-            is_life_safety?: boolean;
-            sort_order?: number;
+            weight: number;
+            na_allowed: boolean;
+            is_life_safety: boolean;
+            sort_order: number;
         };
         TemplateDetail: {
-            template?: components["schemas"]["ChecklistTemplate"];
-            sections?: (components["schemas"]["ChecklistSection"] & {
+            template: components["schemas"]["ChecklistTemplate"];
+            sections: (components["schemas"]["ChecklistSection"] & {
                 items?: components["schemas"]["ChecklistItem"][];
             })[];
         };
@@ -1549,33 +1865,50 @@ export interface components {
             /** @default 0 */
             sort_order: number;
         };
+        ItemUpdateRequest: {
+            question_text?: string;
+            /** @enum {string} */
+            rubric_type?: "TRAFFIC_LIGHT" | "NUMERIC_SCALE" | "MULTI_ROOM" | "BINARY_COUNT";
+            /** Format: double */
+            max_score?: number;
+            /** Format: double */
+            weight?: number;
+            na_allowed?: boolean;
+            is_life_safety?: boolean;
+            sort_order?: number;
+        };
         AuditSession: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: uuid */
-            hotel_id?: string;
+            hotel_id: string;
+            hotel_code: string;
+            hotel_name: string;
             /** Format: uuid */
-            template_id?: string;
-            template_version?: string;
-            department?: string;
+            template_id: string;
+            template_version?: string | null;
+            department: string;
             /** @enum {string} */
-            audit_type?: "FULL" | "MICRO" | "FOLLOWUP";
+            audit_type: "FULL" | "MICRO" | "FOLLOWUP";
             /** @enum {string} */
-            status?: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "PUBLISHED";
+            status: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "PUBLISHED";
             /** Format: uuid */
-            auditor_id?: string;
+            auditor_id: string;
+            auditor_name: string;
             /** Format: date */
-            date_start?: string;
+            date_start: string;
             /** Format: date */
             date_end?: string | null;
+            /** Format: date-time */
+            published_at?: string | null;
             /** Format: double */
             total_score?: number | null;
             /** @enum {string|null} */
             pass_fail?: "PASS" | "FAIL" | null;
             /** @enum {string} */
-            origin?: "SYSTEM" | "LEGACY";
+            origin: "SYSTEM" | "LEGACY";
             /** @enum {string} */
-            sync_status?: "SYNCED" | "PENDING_CONFLICT";
+            sync_status: "SYNCED" | "PENDING_CONFLICT";
         };
         AuditSessionCreateRequest: {
             /** Format: uuid */
@@ -1596,6 +1929,16 @@ export interface components {
              * @description Dihasilkan mobile saat offline (dedupe F-05)
              */
             client_id?: string;
+        };
+        AuditSessionUpdateRequest: {
+            /** @enum {string} */
+            department?: "GM" | "HOUSEKEEPING" | "KITCHEN_FB" | "SECURITY_RISK";
+            /** @enum {string} */
+            audit_type?: "FULL" | "MICRO" | "FOLLOWUP";
+            /** Format: date */
+            date_start?: string;
+            /** Format: date */
+            date_end?: string | null;
         };
         ScoreUpsert: {
             /** Format: uuid */
@@ -1627,6 +1970,15 @@ export interface components {
             scored_by?: string;
             /** Format: date-time */
             updated_at?: string;
+            code?: string | null;
+            question_text?: string | null;
+            rubric_type?: string | null;
+            /** Format: double */
+            max_score?: number | null;
+            is_life_safety?: boolean | null;
+            sort_order?: number | null;
+            section_code?: string | null;
+            section_name?: string | null;
         };
         SyncPushRequest: {
             /** Format: uuid */
@@ -1731,6 +2083,30 @@ export interface components {
             description?: string;
             location?: string;
         };
+        AuditLog: {
+            /** Format: uuid */
+            uuid: string;
+            actor_email?: string | null;
+            action: string;
+            entity_type: string;
+            /** Format: uuid */
+            entity_id: string;
+            before?: {
+                [key: string]: unknown;
+            } | null;
+            after?: {
+                [key: string]: unknown;
+            } | null;
+            ip?: string | null;
+            /** Format: date-time */
+            at?: string | null;
+        };
+        AuditLogPage: {
+            /** @example true */
+            success?: boolean;
+            data?: components["schemas"]["AuditLog"][];
+            meta?: components["schemas"]["PaginationMeta"];
+        };
         IngestionBatch: {
             /** Format: uuid */
             id?: string;
@@ -1769,16 +2145,52 @@ export interface components {
             region?: string;
             /** Format: double */
             score?: number | null;
-            /** @enum {string} */
-            risk_level?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+            /** @enum {string|null} */
+            risk_level?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | null;
             has_life_safety?: boolean;
             open_capa?: number;
+        };
+        DashboardOverview: {
+            /** Format: date-time */
+            as_of?: string;
+            hotels_total?: number;
+            hotels_with_risk?: number;
+            audits_ytd?: number;
+            audits_today?: number;
+            findings_total?: number;
+            life_safety_open?: number;
+            capa_active?: number;
+            capa_closed?: number;
+            /**
+             * @example {
+             *       "OPEN": 12,
+             *       "AWAITING_GM": 5,
+             *       "AWAITING_QA": 3,
+             *       "CLOSED": 22
+             *     }
+             */
+            pipeline?: {
+                [key: string]: number;
+            };
+            sla?: {
+                on_time?: number;
+                near_overdue?: number;
+                overdue?: number;
+                unknown?: number;
+            };
+            insights?: {
+                type?: string;
+                count?: number;
+                open_capa?: number | null;
+                near_overdue?: number | null;
+                findings_ls?: number | null;
+            }[];
         };
         CapaTicket: {
             /** Format: uuid */
             id?: string;
             /** Format: uuid */
-            finding_id?: string;
+            finding_id?: string | null;
             /** Format: uuid */
             hotel_id?: string;
             /** @enum {integer} */
@@ -1787,19 +2199,23 @@ export interface components {
             /** Format: date-time */
             due_at?: string;
             /** @enum {string} */
-            status?: "OPEN" | "IN_PROGRESS" | "AWAITING_GM" | "AWAITING_QA" | "COMPLETED" | "CLOSED" | "OVERDUE";
+            status?: "OPEN" | "IN_PROGRESS" | "AWAITING_GM" | "AWAITING_QA" | "CLOSED";
             title?: string;
             description?: string;
             /** Format: uuid */
             assigned_to?: string | null;
             /** @default 0 */
             escalation_level: number;
+            receipt_id?: string | null;
+            origin?: string;
             /** Format: date-time */
             submitted_at?: string | null;
             /** Format: date-time */
             closed_at?: string | null;
             /** Format: uuid */
             closed_by?: string | null;
+            sla_status?: string | null;
+            overdue?: boolean | null;
         };
         CapaHistory: {
             /** Format: uuid */
@@ -1852,8 +2268,7 @@ export interface components {
             hotel_id?: string;
             /** @enum {string} */
             source?: "RFP_PORTAL" | "CROSS_SELLING" | "REFERRAL" | "MANUAL";
-            /** @enum {string} */
-            institution_type?: "GOV" | "PRIVATE";
+            institution_type?: string;
             company_name?: string;
             pic_name?: string;
             pic_phone?: string;
@@ -1871,16 +2286,55 @@ export interface components {
             owner_id?: string;
             /** Format: uuid */
             referred_from_hotel_id?: string | null;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string | null;
+        };
+        /** @description Row kanban CRM War Room (F-07) — field server-side utk kartu */
+        LeadKanbanRow: {
+            /** Format: uuid */
+            id?: string;
+            lead_no?: string;
+            /** Format: uuid */
+            hotel_id?: string;
+            /** @enum {string} */
+            source?: "RFP_PORTAL" | "CROSS_SELLING" | "REFERRAL" | "MANUAL";
+            institution_type?: string;
+            company_name?: string;
+            pic_name?: string;
+            pic_phone?: string;
+            pic_email?: string;
+            /** Format: uuid */
+            province_id?: string | null;
+            /** @enum {string} */
+            status?: "LEAD" | "CONTACTED" | "PROSPECT" | "CONFIRMED" | "LOST";
+            lost_reason?: string | null;
+            /** Format: date-time */
+            next_followup_at?: string | null;
+            /** Format: double */
+            amount_est?: number | null;
+            /** Format: uuid */
+            owner_id?: string;
+            /** Format: uuid */
+            referred_from_hotel_id?: string | null;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string | null;
+            followup_due?: boolean;
+            hotel_code?: string | null;
+            owner_name?: string | null;
         };
         LeadCreateRequest: {
             /** Format: uuid */
             hotel_id: string;
             /** @enum {string} */
-            source: "RFP_PORTAL" | "CROSS_SELLING" | "REFERRAL" | "MANUAL";
+            source?: "RFP_PORTAL" | "CROSS_SELLING" | "REFERRAL" | "MANUAL";
             /** @enum {string} */
             institution_type?: "GOV" | "PRIVATE";
             company_name: string;
-            pic_name: string;
+            pic_name?: string;
             pic_phone?: string;
             /** Format: email */
             pic_email?: string;
@@ -1890,6 +2344,8 @@ export interface components {
             amount_est?: number;
             /** Format: date-time */
             next_followup_at?: string;
+            /** Format: uuid */
+            owner_id?: string;
         };
         LeadUpdateRequest: {
             /** @enum {string} */
@@ -1901,6 +2357,13 @@ export interface components {
             amount_est?: number;
             /** Format: uuid */
             owner_id?: string;
+            company_name?: string;
+            /** @enum {string} */
+            institution_type?: "GOV" | "PRIVATE";
+            /** @enum {string} */
+            source?: "RFP_PORTAL" | "CROSS_SELLING" | "REFERRAL" | "MANUAL";
+            /** Format: uuid */
+            province_id?: string;
             pic_name?: string;
             pic_phone?: string;
             /** Format: email */
@@ -1943,8 +2406,14 @@ export interface components {
             lead_id?: string;
             /** Format: uuid */
             hotel_id?: string;
+            company_name?: string | null;
+            lead_no?: string | null;
+            institution_type?: string | null;
+            hotel_code?: string | null;
+            hotel_name?: string | null;
             /** Format: date */
             event_date?: string;
+            event_name?: string;
             /** @enum {string} */
             package_type?: "FULLDAY" | "HALFDAY" | "FULLBOARD";
             pax_count?: number;
@@ -1963,6 +2432,8 @@ export interface components {
             status?: "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED";
             /** Format: uuid */
             created_by?: string;
+            /** Format: date-time */
+            created_at?: string;
         };
         /** @description Server menghitung SBM max per (province × package × fiscal_year), snapshot ke quotation (E3), validasi pagu (F-09). */
         QuotationCreateRequest: {
@@ -1970,6 +2441,7 @@ export interface components {
             lead_id: string;
             /** Format: date */
             event_date: string;
+            event_name?: string | null;
             /** @enum {string} */
             package_type: "FULLDAY" | "HALFDAY" | "FULLBOARD";
             pax_count: number;
@@ -1980,6 +2452,21 @@ export interface components {
              * @default 0
              */
             discount_amount: number;
+        };
+        QuotationUpdateRequest: {
+            /** @enum {string} */
+            status?: "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED";
+            /** @enum {string} */
+            discount_approval_status?: "APPROVED" | "REJECTED";
+            event_name?: string;
+            /** Format: date */
+            event_date?: string;
+            pax_count?: number;
+            /** Format: double */
+            gross_amount?: number;
+            /** Format: double */
+            discount_amount?: number;
+            note?: string;
         };
         SbmRate: {
             /** Format: uuid */
@@ -2034,10 +2521,15 @@ export interface components {
             id?: string;
             /** Format: uuid */
             quotation_id?: string;
+            quotation_no?: string | null;
+            hotel_name?: string | null;
+            hotel_code?: string | null;
+            event_name?: string | null;
             /** @enum {string} */
             milestone_type?: "SPK" | "NPWP" | "BAST" | "LPJ";
             doc_no?: string | null;
             doc_key?: string | null;
+            doc_url?: string | null;
             /** @enum {string} */
             status?: "EXPECTED" | "UPLOADED" | "PAID" | "OVERDUE";
             /** Format: double */
@@ -2122,6 +2614,54 @@ export interface components {
             }[];
             /** Format: date-time */
             updated_after?: string;
+        };
+        BrandHotelSummary: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: string;
+            city?: string | null;
+            /** @default ACTIVE */
+            status: string;
+        };
+        BrandDetail: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: string;
+            /** @enum {string} */
+            tier: "Luxury" | "Upscale" | "Boutique" | "Midscale" | "Budget" | "Eco-Resort";
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            status: "ACTIVE" | "INACTIVE" | "RETIRED";
+            /** @default 0 */
+            hotels_count: number;
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: date-time */
+            updated_at?: string | null;
+            hotels?: unknown[];
+        };
+        BrandCreateRequest: {
+            code: string;
+            name: string;
+            /** @enum {string} */
+            tier: "Luxury" | "Upscale" | "Boutique" | "Midscale" | "Budget" | "Eco-Resort";
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            status: "ACTIVE" | "INACTIVE" | "RETIRED";
+        };
+        BrandUpdateRequest: {
+            code?: string;
+            name?: string;
+            /** @enum {string} */
+            tier?: "Luxury" | "Upscale" | "Boutique" | "Midscale" | "Budget" | "Eco-Resort";
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE" | "RETIRED";
         };
     };
     responses: never;
@@ -2650,6 +3190,43 @@ export interface operations {
             };
         };
     };
+    createHotel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HotelCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["Hotel"];
+                    };
+                };
+            };
+            /** @description Kode hotel sudah ada */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     getHotel: {
         parameters: {
             query?: never;
@@ -2685,6 +3262,38 @@ export interface operations {
             };
         };
     };
+    deleteHotel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: {
+                            /** Format: uuid */
+                            id?: string;
+                            code?: string;
+                            /** @example true */
+                            deleted?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+    };
     updateHotel: {
         parameters: {
             query?: never;
@@ -2696,21 +3305,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    name?: string;
-                    /** @example 200 */
-                    geofence_radius_meters?: number;
-                    /**
-                     * @example {
-                     *       "ballroom_capacity": 500,
-                     *       "meeting_rooms": 5,
-                     *       "has_videotron": true
-                     *     }
-                     */
-                    mice_facilities?: Record<string, never>;
-                    /** @enum {string} */
-                    status?: "ACTIVE" | "TEMPORARILY_CLOSED" | "TERMINATED";
-                };
+                "application/json": components["schemas"]["HotelUpdateRequest"];
             };
         };
         responses: {
@@ -2757,7 +3352,13 @@ export interface operations {
     };
     listBrands: {
         parameters: {
-            query?: never;
+            query?: {
+                search?: string;
+                tier?: "Luxury" | "Upscale" | "Boutique" | "Midscale" | "Budget" | "Eco-Resort";
+                status?: "ACTIVE" | "INACTIVE" | "RETIRED";
+                page?: number;
+                per_page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2773,15 +3374,108 @@ export interface operations {
                     "application/json": {
                         /** @example true */
                         success?: boolean;
-                        data?: components["schemas"]["Brand"][];
+                        data?: unknown[];
+                        meta?: unknown;
                     };
                 };
             };
         };
     };
-    listRegions: {
+    createBrand: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": unknown;
+            };
+        };
+        responses: {
+            /** @description Brand created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        message?: string;
+                        data?: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden (memerlukan master:write) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Kode brand sudah terdaftar */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateBrandTier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandTierUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["Brand"];
+                    };
+                };
+            };
+            /** @description Brand tidak ditemukan */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Tier tidak valid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listRegions: {
+        parameters: {
+            query?: {
+                search?: string;
+                status?: "ACTIVE" | "INACTIVE" | "RETIRED";
+                page?: number;
+                per_page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2798,8 +3492,189 @@ export interface operations {
                         /** @example true */
                         success?: boolean;
                         data?: components["schemas"]["Region"][];
+                        meta?: components["schemas"]["PaginationMeta"];
                     };
                 };
+            };
+        };
+    };
+    createRegion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Region created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["Region"];
+                        message?: string;
+                    };
+                };
+            };
+            /** @description Forbidden (memerlukan master:write) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Kode wilayah sudah terdaftar */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getRegion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["RegionDetail"];
+                    };
+                };
+            };
+            /** @description Region tidak ditemukan */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteRegion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: {
+                            id?: string;
+                            code?: string;
+                            deleted?: boolean;
+                        };
+                        message?: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Region tidak ditemukan */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ditolak karena masih ada hotel aktif terdaftar */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateRegion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["Region"];
+                        message?: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Region tidak ditemukan */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Konflik kode wilayah */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2909,6 +3784,53 @@ export interface operations {
             };
         };
     };
+    deleteTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        message?: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflict (template locked atau terhubung dengan sesi audit) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     createTemplateVersion: {
         parameters: {
             query?: never;
@@ -2965,6 +3887,53 @@ export interface operations {
                         data?: components["schemas"]["ChecklistTemplate"];
                     };
                 };
+            };
+        };
+    };
+    archiveTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK (status=ARCHIVED) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["ChecklistTemplate"];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflict (hanya template LOCKED yang dapat diarsipkan) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3033,6 +4002,52 @@ export interface operations {
                         data?: components["schemas"]["ChecklistItem"];
                     };
                 };
+            };
+        };
+    };
+    updateItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                sectionId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["ChecklistItem"];
+                    };
+                };
+            };
+            /** @description Template bukan DRAFT */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rubrik tidak valid / section-item asing / minimal satu field */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3118,11 +4133,101 @@ export interface operations {
                         /** @example true */
                         success?: boolean;
                         data?: components["schemas"]["AuditSession"] & {
+                            department_breakdown?: {
+                                section_code?: string;
+                                section_name?: string;
+                                /** Format: double */
+                                score?: number | null;
+                                /** Format: double */
+                                max?: number | null;
+                                /** Format: double */
+                                pct?: number | null;
+                                items_count?: number | null;
+                            }[] | null;
                             items?: components["schemas"]["AuditItemScore"][];
-                            findings?: components["schemas"]["Finding"][];
+                            findings?: (components["schemas"]["Finding"] & {
+                                item_code?: string | null;
+                            })[];
                         };
                     };
                 };
+            };
+        };
+    };
+    deleteSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        message?: string;
+                    };
+                };
+            };
+            /** @description Sesi bukan DRAFT */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuditSessionUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["AuditSession"];
+                    };
+                };
+            };
+            /** @description Sesi bukan DRAFT */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Parameter tidak valid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3149,6 +4254,39 @@ export interface operations {
                         data?: components["schemas"]["AuditSession"];
                     };
                 };
+            };
+        };
+    };
+    reopenSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["AuditSession"];
+                    };
+                };
+            };
+            /** @description Sesi bukan SUBMITTED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3453,6 +4591,48 @@ export interface operations {
             };
         };
     };
+    listAuditLogs: {
+        parameters: {
+            query?: {
+                entity_type?: string;
+                action?: string;
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Daftar entri audit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditLogPage"];
+                };
+            };
+            /** @description Tidak terautentikasi */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Tanpa izin (bukan korporat / tanpa `users`) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     listBatches: {
         parameters: {
             query?: {
@@ -3663,11 +4843,39 @@ export interface operations {
                     "application/json": {
                         /** @example true */
                         success?: boolean;
-                        data?: {
+                        data: {
+                            /** Format: uuid */
+                            hotel_id?: string;
+                            code?: string;
+                            name?: string;
                             score_history?: components["schemas"]["YoYPoint"][];
                             open_capa_count?: number;
                             risk_level?: string;
                         };
+                    };
+                };
+            };
+        };
+    };
+    getDashboardOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["DashboardOverview"];
                     };
                 };
             };
@@ -3678,7 +4886,7 @@ export interface operations {
             query?: {
                 hotel_id?: string;
                 priority?: 1 | 2 | 3;
-                status?: string;
+                status?: "OPEN" | "AWAITING_GM" | "AWAITING_QA" | "CLOSED";
                 only_overdue?: boolean;
                 page?: number;
             };
@@ -3715,7 +4923,14 @@ export interface operations {
             content: {
                 "application/json": {
                     /** Format: uuid */
-                    finding_id: string;
+                    finding_id?: string | null;
+                    /** Format: uuid */
+                    hotel_id?: string | null;
+                    department?: string | null;
+                    /** @enum {integer|null} */
+                    priority?: 1 | 2 | 3 | null;
+                    title?: string | null;
+                    description?: string | null;
                     /** Format: uuid */
                     assigned_to?: string | null;
                 };
@@ -3758,9 +4973,58 @@ export interface operations {
                         /** @example true */
                         success?: boolean;
                         data?: components["schemas"]["CapaTicket"] & {
-                            media?: components["schemas"]["AuditMedia"][];
+                            hotel_code?: string | null;
+                            assignee_name?: string | null;
+                            sla_status?: string | null;
+                            overdue?: boolean;
+                            media_summary?: {
+                                before?: Record<string, never>;
+                                after?: Record<string, never>;
+                                has_verified_after?: boolean;
+                                ready?: boolean;
+                            };
+                            media?: components["schemas"]["CapaMedia"][];
                             history?: components["schemas"]["CapaHistory"][];
                         };
+                    };
+                };
+            };
+        };
+    };
+    updateTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    title?: string | null;
+                    description?: string | null;
+                    /** @enum {integer|null} */
+                    priority?: 1 | 2 | 3 | null;
+                    /** Format: uuid */
+                    assigned_to?: string | null;
+                    /** Format: date-time */
+                    due_at?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["CapaTicket"];
                     };
                 };
             };
@@ -3987,6 +5251,53 @@ export interface operations {
             };
         };
     };
+    presignGetTicketMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                media_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: {
+                            /** Format: uuid */
+                            media_id?: string;
+                            object_key?: string;
+                            presigned_url?: string;
+                            /** @example 300 */
+                            expires_in?: number;
+                        };
+                    };
+                };
+            };
+            /** @description Media belum VERIFIED / bukan milik ticket */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success?: boolean;
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
     presignTicketMedia: {
         parameters: {
             query?: never;
@@ -4090,6 +5401,7 @@ export interface operations {
                 source?: string;
                 owner_id?: string;
                 followup_due?: boolean;
+                hotel_id?: string;
                 page?: number;
             };
             header?: never;
@@ -4107,7 +5419,7 @@ export interface operations {
                     "application/json": {
                         /** @example true */
                         success?: boolean;
-                        data?: components["schemas"]["Lead"][];
+                        data?: components["schemas"]["LeadKanbanRow"][];
                         meta?: components["schemas"]["PaginationMeta"];
                     };
                 };
@@ -4377,6 +5689,45 @@ export interface operations {
             };
         };
     };
+    updateQuotation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotationUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["Quotation"];
+                    };
+                };
+            };
+            /** @description Transisi status ilegal atau diskon butuh approval GM */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     generateQuotationPdf: {
         parameters: {
             query?: never;
@@ -4610,6 +5961,46 @@ export interface operations {
             };
             /** @description milestone_type/status/due_date tidak valid */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMilestone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["BillingMilestone"];
+                    };
+                };
+            };
+            /** @description Missing permission crm:read / scope hotel/region/global */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Milestone/quotation tidak ditemukan */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4930,6 +6321,169 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    getBrand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: unknown;
+                    };
+                };
+            };
+            /** @description Brand tidak ditemukan */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateBrand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": unknown;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        message?: string;
+                        data?: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brand tidak ditemukan */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Konflik kode brand */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteBrand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        message?: string;
+                        data?: Record<string, never> | null;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brand tidak ditemukan */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ditolak karena masih ada hotel aktif terdaftar */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateBrandTierDirect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": unknown;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: unknown;
+                    };
+                };
             };
         };
     };

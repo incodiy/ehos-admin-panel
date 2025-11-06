@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/context/LanguageContext";
 import { useSidebar } from "@/context/SidebarContext";
 import { useSession } from "@/context/SessionContext";
 import { logoutAction, switchHotelAction } from "@/app/actions/auth";
@@ -31,6 +30,8 @@ import {
   Database,
   LogOut,
   Building,
+  Settings2,
+  SlidersHorizontal,
 } from "lucide-react";
 
 /* ─── Sidebar Item/Group Types ─── */
@@ -79,6 +80,14 @@ const navCategories: Record<string, Omit<SidebarGroup, "id">> = {
       { id: "brands", labelKey: "nav.brands", icon: <Hotel className="w-4 h-4" />, href: "/dashboard/hotels/brands", permission: "hotels" },
     ],
   },
+  config: {
+    labelKey: "nav.config",
+    icon: <Settings2 className="w-5 h-5 shrink-0" />,
+    items: [
+      { id: "checklist-config", labelKey: "nav.checklistConfig", icon: <ListChecks className="w-4 h-4" />, href: "/dashboard/config/checklist", permission: "checklist" },
+      { id: "brand-tiers", labelKey: "nav.brandTiers", icon: <SlidersHorizontal className="w-4 h-4" />, href: "/dashboard/config/brand-tiers", permission: "hotels" },
+    ],
+  },
   i18n: {
     labelKey: "nav.i18n",
     icon: <Languages className="w-5 h-5 shrink-0" />,
@@ -107,7 +116,6 @@ function matchActive(pathname: string, href?: string): boolean {
 
 export function Sidebar() {
   const t = useTranslations();
-  const { language } = useLanguage();
   const { session, hotels } = useSession();
   const router = useRouter();
   const { isCollapsed, toggleCollapse, setMobileOpen, isMobileOpen } = useSidebar();
@@ -143,7 +151,7 @@ export function Sidebar() {
           <span className="min-w-0">
             <span className="block font-display text-xl leading-none text-brand-gradient">{t("common.brand")}</span>
             <span className="block truncate text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground">
-              {language === "id" ? "Suite Operasional Hotel" : "Hotel Operations Suite"}
+              {t("common.brandTagline")}
             </span>
           </span>
         )}
@@ -313,7 +321,7 @@ export function Sidebar() {
           onClick={toggleCollapse}
         >
           {isCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
-          {!isCollapsed && <span>{language === "id" ? "Ciutkan" : "Collapse"}</span>}
+          {!isCollapsed && <span>{t("common.collapse")}</span>}
         </button>
       </div>
     </div>

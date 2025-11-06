@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Bell, ChevronRight, Globe, Menu, Moon, Search, Sun } from "lucide-react";
-import type { Language } from "@/i18n/config";
+import { locales, type Language } from "@/i18n/config";
 import { setLocaleAction } from "@/app/actions/auth";
 
 /* Slugs ke label navigasi (fallback dari common/nav). */
@@ -49,7 +49,7 @@ export function Header() {
             size="icon"
             className="lg:hidden"
             onClick={() => setMobileOpen(true)}
-            aria-label="Menu"
+            aria-label={t("common.menu")}
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -58,14 +58,14 @@ export function Header() {
             size="icon"
             className="hidden lg:inline-flex"
             onClick={toggleCollapse}
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={isCollapsed ? t("common.expandSidebar") : t("common.collapseSidebar")}
           >
             {isCollapsed ? <Menu className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
 
         {/* Breadcrumb */}
-        <nav className="hidden min-w-0 items-center gap-1.5 text-sm text-muted-foreground md:flex" aria-label="Breadcrumb">
+        <nav className="hidden min-w-0 items-center gap-1.5 text-sm text-muted-foreground md:flex" aria-label={t("common.breadcrumb")}>
           {crumbs.map((segment, idx) => {
             const label = slugLabelMap[segment]
               ? t(slugLabelMap[segment])
@@ -98,7 +98,7 @@ export function Header() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              const next: Language = language === "id" ? "en" : "id";
+              const next: Language = locales[(locales.indexOf(language) + 1) % locales.length];
               setLanguage(next);
               // Sinkron preferensi user (F-22); firewall tidak laknat bila backend 4xx.
               void setLocaleAction(next);
@@ -111,12 +111,12 @@ export function Header() {
           </Button>
 
           {/* Theme */}
-          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label={t("common.toggleTheme")}>
             {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </Button>
 
           {/* Notif */}
-          <Button variant="ghost" size="icon" aria-label="Notifications">
+          <Button variant="ghost" size="icon" aria-label={t("common.notifications")}>
             <Bell className="h-5 w-5" />
           </Button>
         </div>

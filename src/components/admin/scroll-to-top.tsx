@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowUp } from "lucide-react";
 
 export function ScrollToTop() {
+  const t = useTranslations();
   useEffect(() => {
     const handleScroll = () => {
       const btn = document.getElementById("scroll-to-top");
@@ -20,7 +22,7 @@ export function ScrollToTop() {
     <button
       id="scroll-to-top"
       type="button"
-      aria-label="Scroll to top"
+      aria-label={t("common.scrollTop")}
       className="fixed bottom-6 right-6 z-40 grid h-10 w-10 place-items-center rounded-xl bg-brand-gradient text-primary-foreground shadow-glow opacity-0 transition-smooth hover:opacity-90"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
     >
