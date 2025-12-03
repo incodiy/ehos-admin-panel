@@ -6,6 +6,7 @@ import { CapaTicketsClient, type CapaTicketListResult } from "./capa-tickets-cli
 export interface CapaFilters {
   status?: string;
   priority?: string;
+  only_overdue?: string;
 }
 
 export default async function CapaPage({ searchParams }: { searchParams: Promise<CapaFilters> }) {
@@ -16,6 +17,7 @@ export default async function CapaPage({ searchParams }: { searchParams: Promise
   const status = params.status?.toUpperCase();
   if (status) query.set("status", status);
   if (params.priority) query.set("priority", params.priority);
+  if (params.only_overdue === "1") query.set("only_overdue", "true");
   if (session?.activeHotel?.id) query.set("hotel_id", session.activeHotel.id);
 
   let result: CapaTicketListResult | null = null;
@@ -29,7 +31,15 @@ export default async function CapaPage({ searchParams }: { searchParams: Promise
   return (
     <>
       <AdminPageHeader titleKey="capa.title" subtitleKey="capa.subtitle" iconKey="shield-alert" />
-      <CapaTicketsClient result={result} error={error} filters={{ status, priority: params.priority }} />
+      <CapaTicketsClient
+        result={result}
+        error={error}
+        filters={{
+          status,
+          priority: params.priority,
+          only_overdue: params.only_overdue === "1",
+        }}
+      />
     </>
   );
 }
