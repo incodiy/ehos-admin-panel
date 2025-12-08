@@ -99,6 +99,98 @@ export async function capaAssignAction(
   }
 }
 
+/** Penugasan Massal (Bulk Assign) — POST /capa/tickets/{id}/assign untuk banyak tiket */
+export async function capaBulkAssignAction(
+  ticketIds: string[],
+  assignedTo: string,
+  note?: string,
+): Promise<{ ok: boolean; count: number; failed: number; message?: string }> {
+  let count = 0;
+  let failed = 0;
+
+  for (const tid of ticketIds) {
+    try {
+      await serverApiFetch(`/capa/tickets/${tid}/assign`, {
+        method: "POST",
+        body: { assigned_to: assignedTo, note: note || "Penugasan Massal (Bulk Action)" },
+      });
+      count++;
+    } catch {
+      failed++;
+    }
+  }
+
+  revalidatePath("/dashboard/capa");
+  return {
+    ok: count > 0,
+    count,
+    failed,
+    message: count > 0 
+      ? `Berhasil menugaskan ${count} tiket CAPA.` 
+      : `Gagal menugaskan tiket terpilih.`,
+  };
+}
+
+/** Eskalasi Massal (Bulk Escalate) — POST /capa/tickets/{id}/escalate untuk banyak tiket */
+export async function capaBulkEscalateAction(
+  ticketIds: string[],
+): Promise<{ ok: boolean; count: number; failed: number; message?: string }> {
+  let count = 0;
+  let failed = 0;
+
+  for (const tid of ticketIds) {
+    try {
+      await serverApiFetch(`/capa/tickets/${tid}/escalate`, {
+        method: "POST",
+      });
+      count++;
+    } catch {
+      failed++;
+    }
+  }
+
+  revalidatePath("/dashboard/capa");
+  return {
+    ok: count > 0,
+    count,
+    failed,
+    message: count > 0
+      ? `Berhasil meningkatkan eskalasi ${count} tiket CAPA.`
+      : `Gagal melakukan eskalasi tiket.`,
+  };
+}
+
+/** Ambil daftar calon resolver/user aktif untuk penugasan */
+export async function capaGetResolversAction(hotelId?: string): Promise<{
+  ok: boolean;
+  users: Array<{ id: string; name: string; email?: string; role_code?: string }>;
+}> {
+  try {
+    let users: Array<{ id: string; name: string; email?: string; role_code?: string }> = [];
+    if (hotelId) {
+      try {
+        const hotelRes = await serverApiFetch<{ data?: Array<{ id: string; name: string; email?: string; role_code?: string }> }>(
+          `/users?hotel_id=${hotelId}&per_page=100`
+        );
+        if (hotelRes.data && hotelRes.data.length > 0) {
+          users = hotelRes.data;
+        }
+      } catch {
+        users = [];
+      }
+    }
+    if (users.length === 0) {
+      const allRes = await serverApiFetch<{ data?: Array<{ id: string; name: string; email?: string; role_code?: string }> }>(
+        `/users?per_page=100`
+      );
+      users = allRes.data ?? [];
+    }
+    return { ok: true, users };
+  } catch {
+    return { ok: false, users: [] };
+  }
+}
+
 /** Teknisi submit perbaikan (foto AFTER) — POST /capa/tickets/{id}/resolve. */
 export async function capaResolveAction(
   ticketId: string,

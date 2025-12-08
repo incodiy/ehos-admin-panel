@@ -88,22 +88,29 @@ export async function deleteHotelAction(
   }
 }
 
+export type City = components["schemas"]["City"];
+export type HotelContact = components["schemas"]["HotelContact"];
+
 export type HotelFormDataOptions = {
   brands: Brand[];
   regions: Region[];
   provinces: Province[];
+  cities: City[];
   gms: Array<{ id: string; name: string }>;
   roms: Array<{ id: string; name: string }>;
+  contacts: HotelContact[];
 };
 
 /** Ambil seluruh options master data untuk form input hotel */
 export async function getHotelFormDataAction(): Promise<ActionOutcome<HotelFormDataOptions>> {
   try {
-    const [brandsRes, regionsRes, provincesRes, usersRes] = await Promise.all([
+    const [brandsRes, regionsRes, provincesRes, citiesRes, usersRes, contactsRes] = await Promise.all([
       serverApiFetch<{ data?: Brand[] }>("/brands").catch(() => ({ data: [] })),
       serverApiFetch<{ data?: Region[] }>("/regions").catch(() => ({ data: [] })),
       serverApiFetch<{ data?: Province[] }>("/provinces").catch(() => ({ data: [] })),
+      serverApiFetch<{ data?: City[] }>("/cities").catch(() => ({ data: [] })),
       serverApiFetch<{ data?: Array<{ id: string; name: string; role_code?: string }> }>("/users").catch(() => ({ data: [] })),
+      serverApiFetch<{ data?: HotelContact[] }>("/hotel-contacts?limit=500").catch(() => ({ data: [] })),
     ]);
 
     const users = usersRes.data ?? [];
@@ -116,8 +123,10 @@ export async function getHotelFormDataAction(): Promise<ActionOutcome<HotelFormD
         brands: brandsRes.data ?? [],
         regions: regionsRes.data ?? [],
         provinces: provincesRes.data ?? [],
+        cities: citiesRes.data ?? [],
         gms: gms.map((g) => ({ id: g.id, name: g.name })),
         roms: roms.map((r) => ({ id: r.id, name: r.name })),
+        contacts: contactsRes.data ?? [],
       },
     };
   } catch (err) {

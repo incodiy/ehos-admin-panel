@@ -42,7 +42,12 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     res = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body:
+        body !== undefined
+          ? typeof body === "string"
+            ? body
+            : JSON.stringify(body)
+          : undefined,
       cache: "no-store",
     });
   } catch {

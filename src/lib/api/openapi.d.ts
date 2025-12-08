@@ -266,6 +266,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/hotels/{code}/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        /** Daftar kontak operasional PIC hotel */
+        get: operations["listHotelContacts"];
+        put?: never;
+        /** Tambah kontak PIC hotel baru */
+        post: operations["createHotelContact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hotels/{code}/contacts/{contactId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+                contactId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Hapus kontak PIC hotel */
+        delete: operations["deleteHotelContact"];
+        options?: never;
+        head?: never;
+        /** Update kontak PIC hotel */
+        patch: operations["updateHotelContact"];
+        trace?: never;
+    };
+    "/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Daftar master kota */
+        get: operations["listCities"];
+        put?: never;
+        /** Tambah master kota baru */
+        post: operations["createCity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cities/{cityId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        /** Detail master kota */
+        get: operations["getCity"];
+        put?: never;
+        post?: never;
+        /** Hapus master kota */
+        delete: operations["deleteCity"];
+        options?: never;
+        head?: never;
+        /** Update master kota */
+        patch: operations["updateCity"];
+        trace?: never;
+    };
     "/brands": {
         parameters: {
             query?: never;
@@ -1627,6 +1707,7 @@ export interface components {
             name?: string;
             country?: string;
             sales_region?: string | null;
+            ecommerce_region?: string | null;
             /**
              * @default ACTIVE
              * @enum {string}
@@ -1651,6 +1732,7 @@ export interface components {
             country: string;
             /** @example Java Sales Division */
             sales_region?: string | null;
+            ecommerce_region?: string | null;
             /**
              * @default ACTIVE
              * @enum {string}
@@ -1662,6 +1744,7 @@ export interface components {
             name?: string;
             country?: string;
             sales_region?: string | null;
+            ecommerce_region?: string | null;
             /** @enum {string} */
             status?: "ACTIVE" | "INACTIVE" | "RETIRED";
         };
@@ -1682,6 +1765,89 @@ export interface components {
             /** Format: uuid */
             hod_user_id?: string | null;
         };
+        City: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: uuid */
+            province_id: string;
+            province?: string | null;
+            /** Format: uuid */
+            region_id: string;
+            region?: string | null;
+            ecommerce_city?: string | null;
+        };
+        CityCreateRequest: {
+            /** @example Surabaya */
+            name: string;
+            /** Format: uuid */
+            province_id: string;
+            /** Format: uuid */
+            region_id?: string | null;
+            /** @example Surabaya Area */
+            ecommerce_city?: string | null;
+        };
+        CityUpdateRequest: {
+            name?: string;
+            /** Format: uuid */
+            province_id?: string | null;
+            /** Format: uuid */
+            region_id?: string | null;
+            ecommerce_city?: string | null;
+        };
+        HotelContact: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            contact_type: "GM" | "SALES" | "FINANCE" | "ROM";
+            name: string;
+            email?: string | null;
+            phone?: string | null;
+            /** Format: uuid */
+            user_id?: string | null;
+            /** Format: uuid */
+            hotel_id?: string | null;
+            hotel_code?: string | null;
+            hotel_name?: string | null;
+            /** @default true */
+            is_primary: boolean;
+        };
+        HotelContactCreateRequest: {
+            /** @enum {string} */
+            contact_type: "GM" | "SALES" | "FINANCE" | "ROM";
+            name: string;
+            email?: string | null;
+            phone?: string | null;
+            /** Format: uuid */
+            user_id?: string | null;
+            /** @default true */
+            is_primary: boolean;
+        };
+        HotelContactGlobalCreateRequest: {
+            /** Format: uuid */
+            hotel_id: string;
+            /** @enum {string} */
+            contact_type: "GM" | "SALES" | "FINANCE" | "ROM";
+            name: string;
+            email?: string | null;
+            phone?: string | null;
+            /** Format: uuid */
+            user_id?: string | null;
+            /** @default true */
+            is_primary: boolean;
+        };
+        HotelContactUpdateRequest: {
+            /** Format: uuid */
+            hotel_id?: string | null;
+            /** @enum {string|null} */
+            contact_type?: "GM" | "SALES" | "FINANCE" | "ROM" | null;
+            name?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            /** Format: uuid */
+            user_id?: string | null;
+            is_primary?: boolean | null;
+        };
         Hotel: {
             /** Format: uuid */
             id?: string;
@@ -1697,7 +1863,12 @@ export interface components {
             region?: string;
             /** Format: uuid */
             province_id?: string;
+            /** Format: uuid */
+            city_id?: string | null;
             city?: string;
+            ecommerce_city?: string | null;
+            sales_region?: string | null;
+            ecommerce_region?: string | null;
             geo?: {
                 /** Format: double */
                 lat?: number;
@@ -1716,8 +1887,18 @@ export interface components {
             mice_facilities?: Record<string, never>;
             /** @enum {string} */
             status?: "ACTIVE" | "TEMPORARILY_CLOSED" | "TERMINATED";
+            image_url?: string | null;
+            /** @default true */
+            has_fb: boolean;
+            /** Format: date */
+            opening_date?: string | null;
+            /** Format: date */
+            terminate_date?: string | null;
+            /** Format: date-time */
+            period_update?: string | null;
             gm_name?: string;
             rom_name?: string;
+            contacts?: components["schemas"]["HotelContact"][];
         };
         HotelCreateRequest: {
             /** @example CWS */
@@ -1730,6 +1911,8 @@ export interface components {
             region_id: string;
             /** Format: uuid */
             province_id: string;
+            /** Format: uuid */
+            city_id?: string | null;
             /** @example Cirebon */
             city: string;
             geo: {
@@ -1751,11 +1934,17 @@ export interface components {
             rom_id?: string | null;
             /** Format: date */
             opening_date?: string | null;
+            /** Format: date */
+            terminate_date?: string | null;
             /**
              * @default ACTIVE
              * @enum {string}
              */
             status: "ACTIVE" | "TEMPORARILY_CLOSED" | "TERMINATED";
+            image_url?: string | null;
+            /** @default true */
+            has_fb: boolean;
+            contacts?: components["schemas"]["HotelContactCreateRequest"][];
         };
         HotelUpdateRequest: {
             code?: string;
@@ -1766,6 +1955,8 @@ export interface components {
             region_id?: string;
             /** Format: uuid */
             province_id?: string;
+            /** Format: uuid */
+            city_id?: string | null;
             city?: string;
             geo?: {
                 /** Format: double */
@@ -1789,6 +1980,9 @@ export interface components {
             terminate_date?: string | null;
             /** @enum {string} */
             status?: "ACTIVE" | "TEMPORARILY_CLOSED" | "TERMINATED";
+            image_url?: string | null;
+            has_fb?: boolean;
+            contacts?: components["schemas"]["HotelContactCreateRequest"][];
         };
         ChecklistTemplate: {
             /** Format: uuid */
@@ -3344,7 +3538,259 @@ export interface operations {
                     "application/json": {
                         /** @example true */
                         success?: boolean;
-                        data?: components["schemas"]["Department"][];
+                        data?: unknown[];
+                    };
+                };
+            };
+        };
+    };
+    listHotelContacts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["HotelContact"][];
+                    };
+                };
+            };
+        };
+    };
+    createHotelContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HotelContactCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["HotelContact"];
+                    };
+                };
+            };
+        };
+    };
+    deleteHotelContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+                contactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    updateHotelContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+                contactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HotelContactUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["HotelContact"];
+                    };
+                };
+            };
+        };
+    };
+    listCities: {
+        parameters: {
+            query?: {
+                province_id?: string;
+                region_id?: string;
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["City"][];
+                    };
+                };
+            };
+        };
+    };
+    createCity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CityCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["City"];
+                    };
+                };
+            };
+        };
+    };
+    getCity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["City"];
+                    };
+                };
+            };
+        };
+    };
+    deleteCity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    updateCity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CityUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["City"];
                     };
                 };
             };

@@ -128,6 +128,26 @@ export async function configLockTemplateAction(templateId: string): Promise<Acti
   }
 }
 
+export async function configUpdateTemplateStatusAction(
+  templateId: string,
+  newStatus: "DRAFT" | "LOCKED" | "ARCHIVED"
+): Promise<ActionOutcome> {
+  try {
+    const res = await serverApiFetch<{ data?: ChecklistTemplate }>(
+      `/checklist/templates/${templateId}/status`,
+      {
+        method: "PATCH",
+        body: { status: newStatus },
+      }
+    );
+    revalidatePath("/dashboard/config/checklist");
+    revalidatePath(`/dashboard/config/checklist/${templateId}/edit`);
+    return { ok: true, data: res.data };
+  } catch (err) {
+    return wrapError(err);
+  }
+}
+
 export async function configAddSectionAction(
   templateId: string,
   input: { code: string; name: string; sort_order: number },
