@@ -7,6 +7,8 @@ type Hotel = components["schemas"]["Hotel"];
 type Brand = components["schemas"]["Brand"];
 type Region = components["schemas"]["Region"];
 type Province = components["schemas"]["Province"];
+type City = components["schemas"]["City"];
+type HotelContact = components["schemas"]["HotelContact"];
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +33,13 @@ export default async function HotelEditPage({
     notFound();
   }
 
-  const [brandsRes, regionsRes, provincesRes, usersRes] = await Promise.all([
+  const [brandsRes, regionsRes, provincesRes, citiesRes, usersRes, contactsRes] = await Promise.all([
     serverApiFetch<{ data?: Brand[] }>("/brands").catch(() => ({ data: [] })),
     serverApiFetch<{ data?: Region[] }>("/regions").catch(() => ({ data: [] })),
     serverApiFetch<{ data?: Province[] }>("/provinces").catch(() => ({ data: [] })),
+    serverApiFetch<{ data?: City[] }>("/cities").catch(() => ({ data: [] })),
     serverApiFetch<{ data?: Array<{ id: string; name: string; role_code?: string }> }>("/users").catch(() => ({ data: [] })),
+    serverApiFetch<{ data?: HotelContact[] }>("/hotel-contacts?limit=500").catch(() => ({ data: [] })),
   ]);
 
   const users = usersRes.data ?? [];
@@ -48,8 +52,10 @@ export default async function HotelEditPage({
       brands={brandsRes.data ?? []}
       regions={regionsRes.data ?? []}
       provinces={provincesRes.data ?? []}
+      cities={citiesRes.data ?? []}
       gms={gms}
       roms={roms}
+      contacts={contactsRes.data ?? []}
     />
   );
 }

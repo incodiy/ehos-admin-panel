@@ -66,6 +66,14 @@ export function RegionEditClient({ region }: RegionEditClientProps) {
       helperText: "Nama divisi penjualan regional untuk CRM & quotation",
     },
     {
+      name: "ecommerce_region",
+      label: "Wilayah E-Commerce",
+      type: "text",
+      defaultValue: region.ecommerce_region ?? "",
+      placeholder: "Contoh: JABAR / BALI NUSA / CENTRAL JAVA",
+      helperText: "Kelompok wilayah pemasaran OTA dan distribusi e-commerce",
+    },
+    {
       name: "status",
       label: "Status Operasional FSM",
       type: "select",
@@ -89,7 +97,8 @@ export function RegionEditClient({ region }: RegionEditClientProps) {
       code: values.code ? values.code.trim().toUpperCase() : undefined,
       name: values.name ? values.name.trim() : undefined,
       country: values.country ? values.country.trim() : undefined,
-      sales_region: values.sales_region ? values.sales_region.trim() : null,
+      sales_region: values.sales_region !== undefined ? (values.sales_region.trim() || null) : undefined,
+      ecommerce_region: values.ecommerce_region !== undefined ? (values.ecommerce_region.trim() || null) : undefined,
       status: values.status as "ACTIVE" | "INACTIVE" | "RETIRED" | undefined,
     });
 

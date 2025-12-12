@@ -112,6 +112,14 @@ export function RegionsClient({
       render: (_, row) => <span>{row.sales_region ?? "—"}</span>,
     },
     {
+      key: "ecommerce_region",
+      label_id: "Wilayah E-Commerce",
+      label_en: "Ecommerce Region",
+      render: (_, row) => (
+        <span className="font-mono text-xs text-muted-foreground">{row.ecommerce_region ?? "—"}</span>
+      ),
+    },
+    {
       key: "status",
       label_id: t("regions.cols.status"),
       label_en: t("regions.cols.status"),

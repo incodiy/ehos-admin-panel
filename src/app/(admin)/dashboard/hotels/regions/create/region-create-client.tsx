@@ -53,6 +53,13 @@ export function RegionCreateClient() {
       helperText: "Nama kelompok sales regional untuk pelaporan CRM dan target bisnis",
     },
     {
+      name: "ecommerce_region",
+      label: "Wilayah E-Commerce",
+      type: "text",
+      placeholder: "Contoh: JABAR / BALI NUSA / CENTRAL JAVA",
+      helperText: "Kelompok wilayah pemasaran OTA dan distribusi e-commerce",
+    },
+    {
       name: "status",
       label: "Status Operasional",
       type: "select",
@@ -75,6 +82,7 @@ export function RegionCreateClient() {
       name: (values.name ?? "").trim(),
       country: values.country?.trim() || "Indonesia",
       sales_region: values.sales_region?.trim() || null,
+      ecommerce_region: values.ecommerce_region?.trim() || null,
       status: (values.status as "ACTIVE" | "INACTIVE" | "RETIRED") || "ACTIVE",
     });
 

@@ -10,6 +10,7 @@ export default async function HotelsPage({
 }: {
   searchParams: Promise<{
     page?: string;
+    search?: string;
     status?: string;
     brand_tier?: string;
     city?: string;
@@ -20,6 +21,9 @@ export default async function HotelsPage({
 
   const queryParts: string[] = [];
   if (page > 1) queryParts.push(`page=${page}`);
+  if (params.search) {
+    queryParts.push(`search=${encodeURIComponent(params.search)}`);
+  }
   if (params.status && params.status !== "ALL") {
     queryParts.push(`status=${encodeURIComponent(params.status)}`);
   }
@@ -51,6 +55,7 @@ export default async function HotelsPage({
         result={result}
         error={error}
         page={page}
+        currentSearch={params.search ?? ""}
         currentStatusFilter={params.status ?? "ALL"}
       />
     </>
