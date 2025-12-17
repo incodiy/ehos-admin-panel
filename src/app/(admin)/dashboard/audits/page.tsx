@@ -1,13 +1,14 @@
 import { AdminPageHeader } from "@/components/admin/design-system";
 import { getServerSession } from "@/lib/auth/session";
 import { serverApiFetch, ApiError } from "@/lib/api/client";
-import type { AuditSessionListResult } from "@/app/actions/audit";
+import type { HotelAuditSummary, DashboardBreakdownsData } from "@/app/actions/audit";
 import { AuditSessionsClient } from "./audit-sessions-client";
 
 export interface AuditFilters {
   department?: string;
   status?: string;
-  page?: string;
+  year?: string;
+  search?: string;
 }
 
 export const dynamic = "force-dynamic";
@@ -19,18 +20,34 @@ export default async function AuditsPage({ searchParams }: { searchParams: Promi
   const query = new URLSearchParams();
   const department = params.department?.toUpperCase();
   const status = params.status?.toUpperCase();
+  const year = params.year ? Number(params.year) : undefined;
   if (department) query.set("department", department);
   if (status) query.set("status", status);
-  const page = Number(params.page ?? "1");
-  if (page > 1) query.set("page", String(page));
+  if (year) query.set("year", String(year));
   if (session?.activeHotel?.id) query.set("hotel_id", session.activeHotel.id);
 
-  let result: AuditSessionListResult | null = null;
+  let hotelSummaries: HotelAuditSummary[] = [];
   let error: ApiError | null = null;
   try {
-    result = await serverApiFetch<AuditSessionListResult>(`/audit/sessions?${query.toString()}`);
+    const res = await serverApiFetch<{ data?: HotelAuditSummary[] }>(
+      `/audit/sessions/hotel-summaries${query.toString() ? `?${query.toString()}` : ""}`
+    );
+    hotelSummaries = res.data ?? [];
   } catch (e) {
     error = e instanceof ApiError ? e : new ApiError(0, null, "unknown_error");
+  }
+
+  let initialBreakdowns: DashboardBreakdownsData | null = null;
+  try {
+    const bQuery = new URLSearchParams();
+    if (session?.activeHotel?.id) bQuery.set("hotel_id", session.activeHotel.id);
+    if (year) bQuery.set("year", String(year));
+    const bRes = await serverApiFetch<{ data?: DashboardBreakdownsData }>(
+      `/audit/sessions/dashboard-breakdowns${bQuery.toString() ? `?${bQuery.toString()}` : ""}`
+    );
+    initialBreakdowns = bRes.data ?? null;
+  } catch {
+    // Non-blocking fallback
   }
 
   let hotels: Array<{ id: string; code: string; name: string }> = [];
@@ -54,9 +71,10 @@ export default async function AuditsPage({ searchParams }: { searchParams: Promi
     <>
       <AdminPageHeader titleKey="audit.title" subtitleKey="audit.subtitle" iconKey="list-checks" />
       <AuditSessionsClient
-        result={result}
+        hotelSummaries={hotelSummaries}
+        initialBreakdowns={initialBreakdowns}
         error={error}
-        filters={{ department, status, page }}
+        filters={{ department, status, year }}
         hotels={hotels}
         canCreate={canCreate}
       />
