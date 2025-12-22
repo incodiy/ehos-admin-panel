@@ -24,11 +24,13 @@ import {
   ChevronRight,
   Pencil,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { components } from "@/lib/api/openapi";
 import {
   configLockTemplateAction,
   configNewVersionAction,
   configArchiveTemplateAction,
+  configUpdateTemplateStatusAction,
   configDeleteTemplateAction,
   configAddSectionAction,
   configDeleteSectionAction,
@@ -37,7 +39,6 @@ import {
   configDeleteItemAction,
   type RubricType,
 } from "@/app/actions/config";
-import { StatusPill } from "@/components/admin/data-table";
 
 type TemplateDetail = components["schemas"]["TemplateDetail"];
 type SectionWithItems = components["schemas"]["TemplateDetail"]["sections"][number];
@@ -47,12 +48,6 @@ interface ChecklistEditClientProps {
   templateDetail: TemplateDetail;
   returnTo?: string;
 }
-
-const STATUS_TONE: Record<string, "on" | "wait" | "off"> = {
-  LOCKED: "on",
-  DRAFT: "wait",
-  ARCHIVED: "off",
-};
 
 const RUBRIC_BADGES: Record<string, { label: string; cls: string }> = {
   TRAFFIC_LIGHT: { label: "Traffic Light (90/45/0)", cls: "bg-rose-500/15 text-rose-600 dark:text-rose-400" },
@@ -280,6 +275,26 @@ export function ChecklistEditClient({ templateDetail, returnTo }: ChecklistEditC
     }
   };
 
+  const handleStatusChange = async (newStatus: "DRAFT" | "LOCKED" | "ARCHIVED") => {
+    if (template.status === newStatus) return;
+    if (!confirm(`Ubah status template menjadi ${newStatus}?`)) return;
+    setBusy(true);
+    setErrorMessage(null);
+    try {
+      const res = await configUpdateTemplateStatusAction(template.id, newStatus);
+      if (!res.ok) {
+        setErrorMessage(res.message || "Gagal mengubah status template.");
+      } else {
+        setSuccessMessage(`Status template berhasil diubah ke ${newStatus}.`);
+        router.refresh();
+      }
+    } catch {
+      setErrorMessage("Terjadi kesalahan jaringan.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleAddSectionSubmit = async (values: Record<string, unknown>) => {
     setBusy(true);
     setErrorMessage(null);
@@ -430,7 +445,26 @@ export function ChecklistEditClient({ templateDetail, returnTo }: ChecklistEditC
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted border border-border/60 text-muted-foreground">
               {template.version}
             </span>
-            <StatusPill tone={STATUS_TONE[template.status] ?? "wait"}>{template.status}</StatusPill>
+            <div className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/40 p-1 text-xs">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground">Status:</span>
+              <select
+                disabled={busy}
+                value={template.status}
+                onChange={(e) => handleStatusChange(e.target.value as "DRAFT" | "LOCKED" | "ARCHIVED")}
+                className={cn(
+                  "rounded-md px-2 py-0.5 text-xs font-bold transition-colors cursor-pointer border-none bg-transparent focus:ring-1 focus:ring-primary",
+                  template.status === "LOCKED"
+                    ? "text-emerald-700 bg-emerald-500/15 dark:text-emerald-300"
+                    : template.status === "DRAFT"
+                    ? "text-amber-700 bg-amber-500/15 dark:text-amber-300"
+                    : "text-zinc-500 bg-zinc-500/15 dark:text-zinc-400"
+                )}
+              >
+                <option value="DRAFT">DRAFT</option>
+                <option value="LOCKED">LOCKED</option>
+                <option value="ARCHIVED">ARCHIVED</option>
+              </select>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             Departemen: <strong className="text-foreground">{template.department}</strong> | Brand Tier:{" "}
@@ -916,8 +950,8 @@ export function ChecklistEditClient({ templateDetail, returnTo }: ChecklistEditC
           )}
         </div>
 
-        {/* Secondary Column (5 cols): Metadata, Telemetry & Lifecycle Controls */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Secondary Column (5 cols): Metadata, Telemetry & Lifecycle Controls (Sticky) */}
+        <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24 self-start">
           {/* Card 1: Lifecycle Controls */}
           <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -929,7 +963,23 @@ export function ChecklistEditClient({ templateDetail, returnTo }: ChecklistEditC
               <div>
                 <p className="text-[11px] text-muted-foreground">Status Aktif Saat Ini</p>
                 <div className="mt-1">
-                  <StatusPill tone={STATUS_TONE[template.status] ?? "wait"}>{template.status}</StatusPill>
+                  <select
+                    disabled={busy}
+                    value={template.status}
+                    onChange={(e) => handleStatusChange(e.target.value as "DRAFT" | "LOCKED" | "ARCHIVED")}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer border border-border/60 bg-background focus:ring-1 focus:ring-primary",
+                      template.status === "LOCKED"
+                        ? "text-emerald-700 dark:text-emerald-300"
+                        : template.status === "DRAFT"
+                        ? "text-amber-700 dark:text-amber-300"
+                        : "text-zinc-500 dark:text-zinc-400"
+                    )}
+                  >
+                    <option value="DRAFT">DRAFT (Penyusunan / Edit Aktif)</option>
+                    <option value="LOCKED">LOCKED (Terkunci untuk Sesi Audit)</option>
+                    <option value="ARCHIVED">ARCHIVED (Diarsipkan)</option>
+                  </select>
                 </div>
               </div>
               <span className="text-xs font-mono text-muted-foreground">{template.version}</span>
