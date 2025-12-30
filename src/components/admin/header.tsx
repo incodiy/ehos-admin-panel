@@ -40,8 +40,8 @@ export function Header() {
   const crumbs = pathname.split("/").filter(Boolean);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-sidebar-border/60 bg-card/70 backdrop-blur-xl">
-      <div className="flex h-16 items-center gap-3 px-3 sm:px-4 md:px-6">
+    <header className="sticky top-0 z-30 h-16 shrink-0 border-b border-sidebar-border/70 bg-card/70 backdrop-blur-xl">
+      <div className="flex h-full items-center gap-3 px-3 sm:px-4 md:px-6">
         {/* Left: toggles */}
         <div className="flex items-center gap-1">
           <Button
