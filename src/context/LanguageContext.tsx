@@ -1,20 +1,12 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { NextIntlClientProvider, useLocale, useTranslations } from "next-intl";
+import { NextIntlClientProvider, useLocale, useTranslations, type AbstractIntlMessages } from "next-intl";
 import { defaultLocale, LOCALE_COOKIE, type Language } from "@/i18n/config";
-
-import idMessages from "@/i18n/messages/id.json";
-import enMessages from "@/i18n/messages/en.json";
-
-const messagesByLocale: Record<Language, Parameters<typeof NextIntlClientProvider>[0]["messages"]> = {
-  id: idMessages,
-  en: enMessages,
-};
 
 interface LanguageContextValue {
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (lang: Language) => Promise<void>;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -26,27 +18,42 @@ function setLocaleCookie(lang: Language) {
 export function LanguageProvider({
   children,
   initialLocale,
+  initialMessages,
 }: {
   children: ReactNode;
   initialLocale: Language;
+  initialMessages: AbstractIntlMessages;
 }) {
   const [language, setLanguageState] = useState<Language>(initialLocale);
+  const [messages, setMessages] = useState<AbstractIntlMessages>(initialMessages);
 
   useEffect(() => {
     setLocaleCookie(language);
   }, [language]);
 
+  const setLanguage = async (lang: Language) => {
+    setLanguageState(lang);
+    setLocaleCookie(lang);
+    if (lang === "en") {
+      const loaded = (await import("@/i18n/messages/en.json")).default;
+      setMessages(loaded as unknown as AbstractIntlMessages);
+    } else {
+      const loaded = (await import("@/i18n/messages/id.json")).default;
+      setMessages(loaded as unknown as AbstractIntlMessages);
+    }
+  };
+
   const value = useMemo<LanguageContextValue>(
     () => ({
       language,
-      setLanguage: (lang: Language) => setLanguageState(lang),
+      setLanguage,
     }),
     [language]
   );
 
   return (
     <LanguageContext.Provider value={value}>
-      <NextIntlClientProvider locale={language} messages={messagesByLocale[language]} timeZone="Asia/Jakarta">
+      <NextIntlClientProvider locale={language} messages={messages} timeZone="Asia/Jakarta">
         {children}
       </NextIntlClientProvider>
     </LanguageContext.Provider>

@@ -55,6 +55,7 @@ async function refreshAndContinue(req: NextRequest, refresh: string): Promise<Ne
       headers: { "content-type": "application/json", accept: "application/json" },
       body: JSON.stringify({ refresh_token: refresh }),
       cache: "no-store",
+      signal: AbortSignal.timeout(2000),
     });
   } catch {
     return toLogin;
@@ -81,5 +82,7 @@ async function refreshAndContinue(req: NextRequest, refresh: string): Promise<Ne
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|woff|woff2|ttf|eot)$).*)",
+  ],
 };

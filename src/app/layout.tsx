@@ -34,12 +34,16 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const initialLocale = normalizeLanguage(cookieStore.get(LOCALE_COOKIE)?.value);
+  const initialMessages =
+    initialLocale === "en"
+      ? (await import("@/i18n/messages/en.json")).default
+      : (await import("@/i18n/messages/id.json")).default;
 
   return (
     <html lang={initialLocale} suppressHydrationWarning>
       <body className={`${barlow.variable} ${barlowCondensed.variable} font-sans`}>
         <ThemeProvider>
-          <LanguageProvider initialLocale={initialLocale}>
+          <LanguageProvider initialLocale={initialLocale} initialMessages={initialMessages}>
             <QueryProvider>{children}</QueryProvider>
           </LanguageProvider>
         </ThemeProvider>
