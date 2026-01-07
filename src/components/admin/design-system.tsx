@@ -40,7 +40,9 @@ const ICON_REGISTRY: Record<string, LucideIcon> = {
 
 interface AdminPageHeaderProps {
   titleKey: string;
+  titleValues?: Record<string, string | number>;
   subtitleKey?: string;
+  subtitleValues?: Record<string, string | number>;
   icon?: LucideIcon;
   /** Alternatif lintas RSC: resolve icon di sisi client dari registry. */
   iconKey?: string;
@@ -52,7 +54,9 @@ interface AdminPageHeaderProps {
 
 export function AdminPageHeader({
   titleKey,
+  titleValues,
   subtitleKey,
+  subtitleValues,
   icon,
   iconKey,
   addLabelKey,
@@ -72,8 +76,14 @@ export function AdminPageHeader({
           </span>
         )}
         <div>
-          <h1 className="font-display text-3xl leading-none tracking-wide md:text-4xl">{t(titleKey)}</h1>
-          {subtitleKey && <p className="mt-1 text-sm text-muted-foreground">{t(subtitleKey)}</p>}
+          <h1 className="font-display text-3xl leading-none tracking-wide md:text-4xl">
+            {titleValues ? t(titleKey, titleValues) : t(titleKey)}
+          </h1>
+          {subtitleKey && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {subtitleValues ? t(subtitleKey, subtitleValues) : t(subtitleKey)}
+            </p>
+          )}
         </div>
       </div>
 
