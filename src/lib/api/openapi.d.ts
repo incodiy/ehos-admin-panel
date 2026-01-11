@@ -193,6 +193,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/roles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detail role beserta permission matrix */
+        get: operations["getRole"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/roles/{id}/permissions": {
         parameters: {
             query?: never;
@@ -203,6 +220,23 @@ export interface paths {
         get?: never;
         /** Set permission role (khusus ROOT_ADMIN — A4) */
         put: operations["setRolePermissions"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Master katalog 38 permissions dikelompokkan per modul */
+        get: operations["listPermissionsCatalog"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1609,25 +1643,53 @@ export interface components {
                 user?: components["schemas"]["User"];
             };
         };
+        UserHotelAssignment: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            hotel_id?: string;
+            code?: string;
+            name?: string;
+            /** @default false */
+            is_primary: boolean;
+        };
+        UserRegionAssignment: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            region_id?: string;
+            code?: string;
+            name?: string;
+        };
         User: {
             /** Format: uuid */
             id?: string;
             /** Format: email */
             email?: string;
             name?: string;
-            phone?: string;
+            phone?: string | null;
             /**
              * @example id
              * @enum {string}
              */
             preferred_locale?: "id" | "en";
-            is_active?: boolean;
+            /** @default true */
+            is_active: boolean;
+            /** @default false */
+            must_change_password: boolean;
             /** Format: date-time */
             last_login_at?: string | null;
             /** Format: date-time */
-            created_at?: string;
+            created_at?: string | null;
             /** Format: date-time */
-            updated_at?: string;
+            updated_at?: string | null;
+            role_code?: string | null;
+            role_name?: string | null;
+            role?: components["schemas"]["Role"];
+            roles?: components["schemas"]["Role"][];
+            hotels?: components["schemas"]["UserHotelAssignment"][];
+            hotel_assignments?: components["schemas"]["UserHotelAssignment"][];
+            region_assignments?: components["schemas"]["UserRegionAssignment"][];
         };
         Role: {
             /** Format: uuid */
@@ -1648,19 +1710,22 @@ export interface components {
             code?: string;
             module?: string;
             action?: string;
-            description?: string;
+            description?: string | null;
         };
         UserCreateRequest: {
             /** Format: email */
             email: string;
             name: string;
-            phone?: string;
+            phone?: string | null;
             /** @enum {string} */
             role_code: "ROOT_ADMIN" | "CORP_EXEC" | "CORP_AUDITOR" | "REGIONAL_ROM" | "HOTEL_GM" | "HOTEL_HOD_TECH" | "HOTEL_SALES" | "HOTEL_FINANCE" | "PUBLIC_CLIENT";
             /** @description Wajib utk role unit; boleh >1 (Cluster GM) */
             hotel_ids?: string[];
+            hotel_assignments?: components["schemas"]["UserHotelAssignment"][];
             /** Format: uuid */
-            region_id?: string;
+            region_id?: string | null;
+            region_ids?: string[];
+            region_assignments?: components["schemas"]["UserRegionAssignment"][];
             /**
              * @default id
              * @enum {string}
@@ -1669,11 +1734,18 @@ export interface components {
             password?: string;
         };
         UserUpdateRequest: {
-            name?: string;
-            phone?: string;
-            /** @enum {string} */
-            preferred_locale?: "id" | "en";
-            is_active?: boolean;
+            name?: string | null;
+            phone?: string | null;
+            /** @enum {string|null} */
+            preferred_locale?: "id" | "en" | null;
+            is_active?: boolean | null;
+            role_code?: string | null;
+            hotel_ids?: string[];
+            hotel_assignments?: components["schemas"]["UserHotelAssignment"][];
+            /** Format: uuid */
+            region_id?: string | null;
+            region_ids?: string[];
+            region_assignments?: components["schemas"]["UserRegionAssignment"][];
             add_hotel_ids?: string[];
             remove_hotel_ids?: string[];
         };
@@ -2836,7 +2908,7 @@ export interface components {
             created_at?: string | null;
             /** Format: date-time */
             updated_at?: string | null;
-            hotels?: unknown[];
+            hotels?: components["schemas"]["BrandHotelSummary"][];
         };
         BrandCreateRequest: {
             code: string;
@@ -3313,9 +3385,42 @@ export interface operations {
                     "application/json": {
                         /** @example true */
                         success?: boolean;
-                        data?: components["schemas"]["Role"][];
+                        data?: components["schemas"]["RoleWithPermissions"][];
                     };
                 };
+            };
+        };
+    };
+    getRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["RoleWithPermissions"];
+                    };
+                };
+            };
+            /** @description Role tidak ditemukan */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3346,6 +3451,39 @@ export interface operations {
                         /** @example true */
                         success?: boolean;
                         data?: components["schemas"]["RoleWithPermissions"];
+                    };
+                };
+            };
+            /** @description Forbidden (A4) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listPermissionsCatalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: {
+                            [key: string]: components["schemas"]["Permission"][];
+                        };
                     };
                 };
             };
@@ -6914,7 +7052,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": unknown;
+                "application/json": components["schemas"]["BrandTierUpdateRequest"];
             };
         };
         responses: {
@@ -6927,7 +7065,7 @@ export interface operations {
                     "application/json": {
                         /** @example true */
                         success?: boolean;
-                        data?: unknown;
+                        data?: components["schemas"]["Brand"];
                     };
                 };
             };

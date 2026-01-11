@@ -64,7 +64,7 @@ export function RiskMap({ points, selectedHotelId, onSelectHotel }: RiskMapProps
       showResetButton={true}
       showLegend={true}
       enableScrollZoom={true}
-      onPointClick={(pt) => {
+      onPointClick={(pt: CommandCenterPoint) => {
         const idStr = String(pt.id);
         if (selectedHotelId === idStr) {
           onSelectHotel?.(null);
