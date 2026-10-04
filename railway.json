@@ -12,6 +12,7 @@
   "environment": {
     "NEXT_PUBLIC_DEFAULT_THEME": "light",
     "NODE_ENV": "production",
-    "NODE_OPTIONS": "--max-old-space-size=512"
+    "NODE_OPTIONS": "--max-old-space-size=512",
+    "NIXPACKS_NODE_VERSION": "20"
   }
 }
