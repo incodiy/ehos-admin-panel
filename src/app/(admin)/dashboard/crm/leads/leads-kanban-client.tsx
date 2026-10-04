@@ -337,7 +337,7 @@ export function LeadsKanbanClient({
 
       {/* Modal lost_reason (F-07: wajib saat LOST) */}
       {pendingLost && (
-        <Modal title={t("crm.lostTitle", { company: pendingLost.company_name })} onClose={() => setPendingLost(null)}>
+        <Modal title={t("crm.lostTitle", { company: pendingLost.company_name ?? "—" })} onClose={() => setPendingLost(null)}>
           <label className="block text-sm font-medium">{t("crm.lostReasonLabel")}</label>
           <input
             value={lostReason}
