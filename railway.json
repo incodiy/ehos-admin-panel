@@ -1,19 +1,10 @@
 {
   "build": {
-    "builder": "heroku-20",
-    "buildCommand": "rm -rf node_modules && npm install --legacy-peer-deps && npm run build",
-    "watchPatterns": [
-      "src/**/*",
-      "public/**/*",
-      "components/**/*",
-      "next.config.ts",
-      "tsconfig.json",
-      "package.json"
-    ]
+    "builder": "nixpacks"
   },
   "deploy": {
     "startCommand": "npm start",
-    "restartPolicyType": "always",
+    "restartPolicyType": "ALWAYS",
     "healthcheckPath": "/",
     "healthcheckTimeout": 30,
     "port": 3000
