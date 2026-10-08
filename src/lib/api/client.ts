@@ -1,8 +1,13 @@
 import { AUTH_ACCESS_COOKIE } from "@/lib/auth/tokens";
 
-/** Base URL kontrak backend (delay via env; default dev lokal). */
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api/v1";
+const rawBaseUrl = (
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api/v1"
+).trim().replace(/\/+$/, "");
+
+/** Base URL kontrak backend (delay via env; default dev lokal). Menjamin akhiran /api/v1. */
+export const API_BASE_URL = rawBaseUrl.endsWith("/api/v1")
+  ? rawBaseUrl
+  : `${rawBaseUrl}/api/v1`;
 
 /**
  * Error API terstruktur. G4: caller wajib menampilkan state error yang jujur —
