@@ -1,5 +1,5 @@
 import { AdminPageHeader } from "@/components/admin/design-system";
-import { getServerSession } from "@/lib/auth/session";
+import { getServerSession, isCorporate } from "@/lib/auth/session";
 import { serverApiFetch, ApiError } from "@/lib/api/client";
 import type { HotelAuditSummary, DashboardBreakdownsData } from "@/app/actions/audit";
 import { AuditSessionsClient } from "./audit-sessions-client";
@@ -9,6 +9,7 @@ export interface AuditFilters {
   status?: string;
   year?: string;
   search?: string;
+  hotel_id?: string;
 }
 
 export const dynamic = "force-dynamic";
@@ -21,10 +22,11 @@ export default async function AuditsPage({ searchParams }: { searchParams: Promi
   const department = params.department?.toUpperCase();
   const status = params.status?.toUpperCase();
   const year = params.year ? Number(params.year) : undefined;
+  const effectiveHotelId = params.hotel_id || (!isCorporate(session) ? session?.activeHotel?.id : undefined);
   if (department) query.set("department", department);
   if (status) query.set("status", status);
   if (year) query.set("year", String(year));
-  if (session?.activeHotel?.id) query.set("hotel_id", session.activeHotel.id);
+  if (effectiveHotelId) query.set("hotel_id", effectiveHotelId);
 
   let hotelSummaries: HotelAuditSummary[] = [];
   let error: ApiError | null = null;
@@ -40,7 +42,7 @@ export default async function AuditsPage({ searchParams }: { searchParams: Promi
   let initialBreakdowns: DashboardBreakdownsData | null = null;
   try {
     const bQuery = new URLSearchParams();
-    if (session?.activeHotel?.id) bQuery.set("hotel_id", session.activeHotel.id);
+    if (effectiveHotelId) bQuery.set("hotel_id", effectiveHotelId);
     if (year) bQuery.set("year", String(year));
     const bRes = await serverApiFetch<{ data?: DashboardBreakdownsData }>(
       `/audit/sessions/dashboard-breakdowns${bQuery.toString() ? `?${bQuery.toString()}` : ""}`

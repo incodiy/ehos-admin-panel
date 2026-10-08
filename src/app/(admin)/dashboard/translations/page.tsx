@@ -1,6 +1,6 @@
 import { AdminPageHeader } from "@/components/admin/design-system";
 import { serverApiFetch } from "@/lib/api/client";
-import { TranslationsClient } from "./translations-client";
+import { TranslationsClient, type TranslationItem } from "./translations-client";
 
 export const dynamic = "force-dynamic";
 
@@ -8,26 +8,21 @@ interface TranslationsResponse {
   success?: boolean;
   data?: {
     locale?: string;
-    items?: Array<{
-      entity_type?: string;
-      entity_id?: string;
-      field_name?: string;
-      content?: string;
-    }>;
+    items?: TranslationItem[];
   };
 }
 
 export default async function TranslationsPage() {
-  let items: Array<{
-    entity_type?: string;
-    entity_id?: string;
-    field_name?: string;
-    content?: string;
-  }> = [];
+  let items: TranslationItem[] = [];
 
   try {
-    const res = await serverApiFetch<TranslationsResponse>("/translations?locale=id");
-    items = res?.data?.items ?? [];
+    const [resId, resEn] = await Promise.all([
+      serverApiFetch<TranslationsResponse>("/translations?locale=id").catch(() => null),
+      serverApiFetch<TranslationsResponse>("/translations?locale=en").catch(() => null),
+    ]);
+    const itemsId = (resId?.data?.items ?? []).map((it) => ({ ...it, locale: "id" }));
+    const itemsEn = (resEn?.data?.items ?? []).map((it) => ({ ...it, locale: "en" }));
+    items = [...itemsId, ...itemsEn];
   } catch {
     items = [];
   }
@@ -39,7 +34,7 @@ export default async function TranslationsPage() {
         subtitleKey="common.brandTagline"
         iconKey="database"
       />
-      <TranslationsClient initialItems={items} currentLocale="id" />
+      <TranslationsClient initialItems={items} />
     </div>
   );
 }

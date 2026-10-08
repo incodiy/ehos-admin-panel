@@ -1,5 +1,5 @@
 import { AdminPageHeader } from "@/components/admin/design-system";
-import { getServerSession } from "@/lib/auth/session";
+import { getServerSession, isCorporate } from "@/lib/auth/session";
 import { serverApiFetch, ApiError } from "@/lib/api/client";
 import type { components } from "@/lib/api/openapi";
 import { LeadsKanbanClient, type WarRoomData } from "./leads-kanban-client";
@@ -11,7 +11,8 @@ export type LeadKanbanRow = components["schemas"]["LeadKanbanRow"];
 
 export default async function LeadsKanbanPage() {
   const session = await getServerSession();
-  const hotelParam = session?.activeHotel?.id ? `&hotel_id=${session.activeHotel.id}` : "";
+  const effectiveHotelId = !isCorporate(session) ? session?.activeHotel?.id : undefined;
+  const hotelParam = effectiveHotelId ? `&hotel_id=${effectiveHotelId}` : "";
 
   const columns: WarRoomData["columns"] = {};
   let dueTotal = 0;

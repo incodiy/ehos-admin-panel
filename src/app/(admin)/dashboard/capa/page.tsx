@@ -1,5 +1,5 @@
 import { AdminPageHeader } from "@/components/admin/design-system";
-import { getServerSession } from "@/lib/auth/session";
+import { getServerSession, isCorporate } from "@/lib/auth/session";
 import { serverApiFetch, ApiError } from "@/lib/api/client";
 import { CapaTicketsClient, type CapaTicketListResult } from "./capa-tickets-client";
 
@@ -21,7 +21,7 @@ export default async function CapaPage({ searchParams }: { searchParams: Promise
   const params = await searchParams;
   const session = await getServerSession();
 
-  const activeHotelId = params.hotel_id || session?.activeHotel?.id;
+  const activeHotelId = params.hotel_id || (!isCorporate(session) ? session?.activeHotel?.id : undefined);
 
   const query = new URLSearchParams();
   const status = params.status?.toUpperCase();
