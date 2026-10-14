@@ -1,10 +1,22 @@
 "use client";
 
 import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-// import { CommandCenterMap, type CommandCenterPoint } from "@incodiy/cavaloc";
+import type { CommandCenterPoint } from "@incodiy/cavaloc";
 import type { components } from "@/lib/api/openapi";
 import { useTheme } from "@/context/ThemeContext";
+
+// Leaflet/Mapbox mengakses `window` saat load — render client-only (pola sama dgn MapView di modul hotels).
+const CommandCenterMap = dynamic(
+  () => import("@incodiy/cavaloc").then((mod) => mod.CommandCenterMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[480px] w-full animate-pulse rounded-lg bg-muted/40" />
+    ),
+  }
+);
 
 type HeatmapPoint = components["schemas"]["HeatmapPoint"];
 
@@ -14,23 +26,10 @@ interface RiskMapProps {
   onSelectHotel?: (hotelId: string | null) => void;
 }
 
-// TODO: Re-enable when @incodiy/cavaloc 6.1.0+ is available with CommandCenterMap export
 export function RiskMap({ points, selectedHotelId, onSelectHotel }: RiskMapProps) {
   const t = useTranslations();
   const { theme } = useTheme();
 
-  // Placeholder: Return empty div until CommandCenterMap is available
-  return (
-    <div className="w-full h-[480px] bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800">
-      <div className="text-center">
-        <p className="text-slate-600 dark:text-slate-400 text-sm">
-          Risk Map Component — Pending @incodiy/cavaloc 6.1.0+ Update
-        </p>
-      </div>
-    </div>
-  );
-
-  /* ORIGINAL CODE — DISABLED
   const centerPoints = useMemo<CommandCenterPoint[]>(() => {
     return points.map((p) => {
       const scoreVal = p.score != null ? p.score.toFixed(1) : "—";
@@ -87,5 +86,4 @@ export function RiskMap({ points, selectedHotelId, onSelectHotel }: RiskMapProps
       }}
     />
   );
-  */
 }
